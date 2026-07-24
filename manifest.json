@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-07-24T22:43:57Z",
+  "items": [
+    {
+      "name": "hello-app",
+      "description": "Multi-file greeter. Reference example for the apps/ convention.",
+      "version": "1.0.0",
+      "entrypoint": "bin/hello-app.sh",
+      "link_path": "~/.local/bin/hello-app",
+      "target_path": "~/.local/share/hello-app",
+      "os": [
+        "linux",
+        "darwin"
+      ],
+      "executable": true,
+      "kind": "app",
+      "base_path": "apps/hello-app",
+      "files": [
+        "bin/hello-app.sh",
+        "lib/greeting.sh"
+      ]
+    },
+    {
+      "name": "hello-toolbox",
+      "description": "Prints a greeting. Reference example for the scripts/ convention.",
+      "version": "1.0.0",
+      "entrypoint": "hello-toolbox.sh",
+      "target_path": "~/.local/bin/hello-toolbox",
+      "os": [
+        "linux",
+        "darwin"
+      ],
+      "executable": true,
+      "kind": "script",
+      "base_path": "scripts/hello-toolbox",
+      "files": [
+        "hello-toolbox.sh"
+      ]
+    }
+  ]
+}

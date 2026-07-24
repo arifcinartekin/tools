@@ -1,0 +1,10 @@
+{
+  "name": "hello-app",
+  "description": "Multi-file greeter. Reference example for the apps/ convention.",
+  "version": "1.0.0",
+  "entrypoint": "bin/hello-app.sh",
+  "link_path": "~/.local/bin/hello-app",
+  "target_path": "~/.local/share/hello-app",
+  "os": ["linux", "darwin"],
+  "executable": true
+}

@@ -1,0 +1,7 @@
+Origin: pkg.arifcinartekin.me
+Label: arifcinartekin tool repository
+Codename: stable
+Architectures: amd64 arm64 source
+Components: main
+Description: Personal APT package repository for arifcinartekin's tools
+SignWith: yes

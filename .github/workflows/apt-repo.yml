@@ -1,0 +1,85 @@
+name: Build APT repository
+
+# Picks up any .deb files dropped in packages/, imports them into apt-repo/
+# with reprepro (signing with the repository's GPG key), then removes the
+# source .deb from packages/ and commits the updated apt-repo/ tree.
+#
+# Requires two repository secrets: GPG_PRIVATE_KEY (armored private key,
+# base64-encoded) and GPG_PASSPHRASE. See README.md for how to generate and
+# add them.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for new packages
+        id: check
+        run: |
+          shopt -s nullglob
+          debs=(packages/*.deb)
+          if [ ${#debs[@]} -eq 0 ]; then
+            echo "has_debs=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_debs=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install reprepro
+        if: steps.check.outputs.has_debs == 'true'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq reprepro
+
+      - name: Import GPG signing key
+        if: steps.check.outputs.has_debs == 'true'
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          echo "allow-preset-passphrase" >> ~/.gnupg/gpg-agent.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent || true
+          echo "$GPG_PRIVATE_KEY" | base64 -d | gpg --batch --import
+
+      - name: Preset GPG passphrase in agent
+        if: steps.check.outputs.has_debs == 'true'
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          keygrip="$(gpg --with-keygrip -K | awk '/Keygrip/{print $3; exit}')"
+          preset_bin="$(gpgconf --list-dirs libexecdir)/gpg-preset-passphrase"
+          "$preset_bin" --preset "$keygrip" <<< "$GPG_PASSPHRASE"
+
+      - name: Export public key
+        if: steps.check.outputs.has_debs == 'true'
+        run: gpg --armor --export --output apt-repo/public.key
+
+      - name: Add packages to the repository
+        if: steps.check.outputs.has_debs == 'true'
+        run: |
+          for deb in packages/*.deb; do
+            reprepro -b apt-repo includedeb stable "$deb"
+            git rm -f "$deb"
+          done
+
+      - name: Commit updated repository
+        if: steps.check.outputs.has_debs == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add apt-repo/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: update APT repository"
+            git push
+          fi

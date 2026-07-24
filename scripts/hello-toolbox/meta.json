@@ -1,0 +1,9 @@
+{
+  "name": "hello-toolbox",
+  "description": "Prints a greeting. Reference example for the scripts/ convention.",
+  "version": "1.0.0",
+  "entrypoint": "hello-toolbox.sh",
+  "target_path": "~/.local/bin/hello-toolbox",
+  "os": ["linux", "darwin"],
+  "executable": true
+}

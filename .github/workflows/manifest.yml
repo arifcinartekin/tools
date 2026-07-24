@@ -1,0 +1,44 @@
+name: Build manifest
+
+# Regenerates manifest.json from every scripts/*/meta.json and apps/*/meta.json,
+# and keeps the extensionless "sh" copy of install.sh in sync. Both outputs are
+# committed back by this workflow and must never be edited by hand.
+#
+# The path filter below only matches source files (never manifest.json or sh
+# themselves), so the commit this workflow makes does not retrigger it.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "apps/**"
+      - "install.sh"
+      - ".github/scripts/build-manifest.sh"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build manifest.json
+        run: ./.github/scripts/build-manifest.sh
+
+      - name: Sync install.sh -> sh
+        run: cp install.sh sh
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.json sh
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: regenerate manifest.json"
+            git push
+          fi
