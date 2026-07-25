@@ -14,7 +14,7 @@ set -e
 
 BASE_URL="https://pkg.arifcinartekin.me"
 GH_OWNER="arifcinartekin"
-GH_REPO="pkg"
+GH_REPO="tools"
 KEYRING_PATH="/usr/share/keyrings/pkg-arifcinartekin.gpg"
 SOURCES_LIST="/etc/apt/sources.list.d/pkg-arifcinartekin.list"
 SOURCES_LINE="deb [signed-by=${KEYRING_PATH}] ${BASE_URL}/apt-repo stable main"

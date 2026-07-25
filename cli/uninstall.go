@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/arifcinartekin/pkg/cli/internal/installer"
-	"github.com/arifcinartekin/pkg/cli/internal/state"
+	"github.com/arifcinartekin/tools/cli/internal/installer"
+	"github.com/arifcinartekin/tools/cli/internal/state"
 )
 
 func runUninstall(names []string) error {

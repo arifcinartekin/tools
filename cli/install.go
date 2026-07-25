@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/arifcinartekin/pkg/cli/internal/installer"
-	"github.com/arifcinartekin/pkg/cli/internal/manifest"
-	"github.com/arifcinartekin/pkg/cli/internal/state"
+	"github.com/arifcinartekin/tools/cli/internal/installer"
+	"github.com/arifcinartekin/tools/cli/internal/manifest"
+	"github.com/arifcinartekin/tools/cli/internal/state"
 )
 
 func runInstall(names []string) error {

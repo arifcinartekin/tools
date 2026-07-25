@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"sort"
 
-	"github.com/arifcinartekin/pkg/cli/internal/manifest"
-	"github.com/arifcinartekin/pkg/cli/internal/state"
+	"github.com/arifcinartekin/tools/cli/internal/manifest"
+	"github.com/arifcinartekin/tools/cli/internal/state"
 )
 
 func runList() error {

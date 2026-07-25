@@ -1,5 +1,5 @@
 // Command toolbox installs and updates scripts and apps published in the
-// arifcinartekin/pkg tool repository, and manages the local record of what
+// arifcinartekin/tools tool repository, and manages the local record of what
 // is currently installed.
 package main
 

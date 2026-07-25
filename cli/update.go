@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/arifcinartekin/pkg/cli/internal/installer"
-	"github.com/arifcinartekin/pkg/cli/internal/manifest"
-	"github.com/arifcinartekin/pkg/cli/internal/semver"
-	"github.com/arifcinartekin/pkg/cli/internal/state"
+	"github.com/arifcinartekin/tools/cli/internal/installer"
+	"github.com/arifcinartekin/tools/cli/internal/manifest"
+	"github.com/arifcinartekin/tools/cli/internal/semver"
+	"github.com/arifcinartekin/tools/cli/internal/state"
 )
 
 func runUpdate(args []string) error {

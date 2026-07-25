@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arifcinartekin/pkg/cli/internal/manifest"
+	"github.com/arifcinartekin/tools/cli/internal/manifest"
 )
 
 // ExpandPath resolves a leading "~" (or "~/...") to the current user's home

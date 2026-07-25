@@ -1,3 +1,3 @@
-module github.com/arifcinartekin/pkg/cli
+module github.com/arifcinartekin/tools/cli
 
 go 1.22
