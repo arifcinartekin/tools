@@ -71,6 +71,14 @@ info "Detected platform: $OS_KIND"
 # --- APT repository setup (Debian/Ubuntu and derivatives only) -------------
 
 setup_apt_repo() {
+  # The APT repo (and its signing key) only exist once the maintainer has
+  # generated a GPG key and the apt-repo workflow has published it - don't
+  # hard-fail the whole install over that; just skip this part.
+  if ! curl -fsSL --head "${BASE_URL}/apt-repo/public.key" >/dev/null 2>&1; then
+    info "APT repository not published yet (no key at ${BASE_URL}/apt-repo/public.key) - skipping APT setup."
+    return 0
+  fi
+
   MISSING_DEPS=""
   for dep in gnupg ca-certificates; do
     dpkg -s "$dep" >/dev/null 2>&1 || MISSING_DEPS="$MISSING_DEPS $dep"
@@ -83,7 +91,13 @@ setup_apt_repo() {
   fi
 
   info "Installing GPG signing key to $KEYRING_PATH"
-  curl -fsSL "${BASE_URL}/apt-repo/public.key" | as_root gpg --batch --yes --dearmor -o "$KEYRING_PATH"
+  TMP_KEY="$(mktemp)"
+  if ! curl -fsSL "${BASE_URL}/apt-repo/public.key" -o "$TMP_KEY"; then
+    rm -f "$TMP_KEY"
+    fatal "failed to download ${BASE_URL}/apt-repo/public.key"
+  fi
+  as_root gpg --batch --yes --dearmor -o "$KEYRING_PATH" "$TMP_KEY"
+  rm -f "$TMP_KEY"
 
   if [ -f "$SOURCES_LIST" ] && [ "$(cat "$SOURCES_LIST")" = "$SOURCES_LINE" ]; then
     info "APT source already up to date ($SOURCES_LIST)"

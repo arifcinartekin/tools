@@ -1,8 +1,14 @@
 name: Build APT repository
 
-# Picks up any .deb files dropped in packages/, imports them into apt-repo/
-# with reprepro (signing with the repository's GPG key), then removes the
-# source .deb from packages/ and commits the updated apt-repo/ tree.
+# Publishes apt-repo/public.key and a validly signed (possibly empty)
+# repository whenever this runs, then imports any .deb files dropped in
+# packages/ with reprepro, removes them from packages/ once published, and
+# commits the result.
+#
+# Triggered by pushes to packages/**, but also run this manually once via
+# "Run workflow" (workflow_dispatch) right after adding the GPG secrets
+# below - that's what publishes public.key for the very first time, before
+# any package has ever been added.
 #
 # Requires two repository secrets: GPG_PRIVATE_KEY (armored private key,
 # base64-encoded) and GPG_PASSPHRASE. See README.md for how to generate and
@@ -23,23 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for new packages
-        id: check
-        run: |
-          shopt -s nullglob
-          debs=(packages/*.deb)
-          if [ ${#debs[@]} -eq 0 ]; then
-            echo "has_debs=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_debs=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Install reprepro
-        if: steps.check.outputs.has_debs == 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq reprepro
 
       - name: Import GPG signing key
-        if: steps.check.outputs.has_debs == 'true'
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
@@ -51,7 +44,6 @@ jobs:
           echo "$GPG_PRIVATE_KEY" | base64 -d | gpg --batch --import
 
       - name: Preset GPG passphrase in agent
-        if: steps.check.outputs.has_debs == 'true'
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
@@ -60,8 +52,18 @@ jobs:
           "$preset_bin" --preset "$keygrip" <<< "$GPG_PASSPHRASE"
 
       - name: Export public key
-        if: steps.check.outputs.has_debs == 'true'
         run: gpg --armor --export --output apt-repo/public.key
+
+      - name: Check for new packages
+        id: check
+        run: |
+          shopt -s nullglob
+          debs=(packages/*.deb)
+          if [ ${#debs[@]} -eq 0 ]; then
+            echo "has_debs=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_debs=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Add packages to the repository
         if: steps.check.outputs.has_debs == 'true'
@@ -71,8 +73,11 @@ jobs:
             git rm -f "$deb"
           done
 
+      - name: Ensure the repository index is signed and up to date
+        if: steps.check.outputs.has_debs == 'false'
+        run: reprepro -b apt-repo export stable
+
       - name: Commit updated repository
-        if: steps.check.outputs.has_debs == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
