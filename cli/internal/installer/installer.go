@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/arifcinartekin/tools/cli/internal/httpclient"
 	"github.com/arifcinartekin/tools/cli/internal/manifest"
 )
 
@@ -31,7 +32,7 @@ func ExpandPath(p string) (string, error) {
 	return filepath.Join(home, strings.TrimPrefix(p, "~/")), nil
 }
 
-var httpClient = &http.Client{Timeout: 60 * time.Second}
+var httpClient = httpclient.New(60 * time.Second)
 
 func downloadTo(url, destPath string, executable bool) error {
 	if err := os.MkdirAll(filepath.Dir(destPath), 0o755); err != nil {

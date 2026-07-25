@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/arifcinartekin/tools/cli/internal/httpclient"
 )
 
 // Item describes a single installable script or app.
@@ -34,7 +36,7 @@ type Manifest struct {
 // Fetch downloads and parses manifest.json from baseURL (e.g.
 // https://pkg.arifcinartekin.me).
 func Fetch(baseURL string) (*Manifest, error) {
-	client := &http.Client{Timeout: 15 * time.Second}
+	client := httpclient.New(15 * time.Second)
 	resp, err := client.Get(baseURL + "/manifest.json")
 	if err != nil {
 		return nil, fmt.Errorf("fetching manifest: %w", err)
