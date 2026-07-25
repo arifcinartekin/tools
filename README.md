@@ -143,6 +143,9 @@ Run via `curl -fsSL https://pkg.arifcinartekin.me/sh | sh` (or
 3. **On every platform**: downloads the `toolbox` CLI binary matching your
    OS/architecture from the latest GitHub Release and installs it to
    `~/.local/bin` (or `$PREFIX/bin` on Termux, which needs no root at all).
+   It also ensures that directory is in the profile for the invoking user's
+   shell (`.zshrc`, `.bashrc`, Fish's `config.fish`, or `.profile`). Open a
+   new terminal after installation.
 
 Every step is idempotent — re-running the script is safe and just
 re-verifies/updates things in place.

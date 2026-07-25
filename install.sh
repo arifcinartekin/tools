@@ -149,12 +149,33 @@ chmod +x "$TMP_CLI"
 mv "$TMP_CLI" "$CLI_DEST"
 trap - EXIT
 
-case ":$PATH:" in
-  *":$BIN_DIR:"*) ;;
-  *)
-    info "NOTE: $BIN_DIR is not on your PATH."
-    info "Add this to your shell profile: export PATH=\"$BIN_DIR:\$PATH\""
-    ;;
+# This process cannot change the parent shell's PATH (the usual install
+# command pipes this script into sh), so persist the change in the profile
+# for the shell that launched it instead. Do this even when the current PATH
+# already contains BIN_DIR: it may have been set only for this shell session.
+SHELL_NAME="${SHELL##*/}"
+case "$SHELL_NAME" in
+  zsh) PROFILE_PATH="$HOME/.zshrc" ;;
+  bash) PROFILE_PATH="$HOME/.bashrc" ;;
+  fish) PROFILE_PATH="$HOME/.config/fish/config.fish" ;;
+  *) PROFILE_PATH="$HOME/.profile" ;;
 esac
+
+case "$SHELL_NAME" in
+  fish) PATH_LINE="fish_add_path -g $BIN_DIR" ;;
+  *) PATH_LINE="export PATH=\"$BIN_DIR:\$PATH\"" ;;
+esac
+
+if [ ! -f "$PROFILE_PATH" ] || ! grep -Fqx "$PATH_LINE" "$PROFILE_PATH" >/dev/null 2>&1; then
+  info "Adding $BIN_DIR to PATH in $PROFILE_PATH"
+  mkdir -p "$(dirname "$PROFILE_PATH")"
+  {
+    printf '\n# Added by the toolbox installer\n'
+    printf '%s\n' "$PATH_LINE"
+  } >> "$PROFILE_PATH"
+else
+  info "$BIN_DIR is already configured in $PROFILE_PATH"
+fi
+info "Open a new terminal, or run: $PATH_LINE"
 
 info "Done. Run 'toolbox list' to see what's available in the repository."
